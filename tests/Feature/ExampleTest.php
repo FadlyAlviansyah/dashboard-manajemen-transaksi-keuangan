@@ -14,6 +14,9 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect('/dashboard-and-tabel');
+
+        $dashboardResponse = $this->get('/dashboard-and-tabel');
+        $dashboardResponse->assertStatus(200);
     }
 }
