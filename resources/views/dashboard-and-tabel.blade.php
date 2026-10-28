@@ -431,8 +431,8 @@
         animation: popModal 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    @keyframes popModal {
-        0% { transform: scale(0.9); opacity: 0; }
+    @keyframes modalPop {
+        0% { transform: scale(0.8); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
     }
 </style>
@@ -440,14 +440,13 @@
 
 @section('content')
 
-    <!-- Hero Welcome Banner (Gojek x Duolingo Vibe) -->
     <div class="hero-banner">
         <div class="hero-text">
             <h1>
                 <span>Halo Sobat FinTrack!</span> 
                 <span class="streak-icon">🦉</span>
             </h1>
-            <p>Kelola data customer dan transaksi keuangan dengan antarmuka ceria, cepat, dan terpercaya. Data tersinkronisasi langsung dengan file <code>storage/app/data/customers.csv</code>!</p>
+            <p>Kelola data customer dan transaksi keuangan dengan antarmuka ceria, cepat, dan terpercaya. Data tersinkronisasi langsung dengan file CSV!</p>
         </div>
         <div class="hero-streak-badge">
             <div style="font-size: 1.8rem;">⚡</div>
@@ -458,12 +457,9 @@
         </div>
     </div>
 
-    <!-- Quick Stats Cards (Ringkasan Data customers.csv) -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon-wrap" style="background: #E8F8EE; color: #00AA13;">
-                👥
-            </div>
+            <div class="stat-icon-wrap" style="background: #E8F8EE; color: #00AA13;">👥</div>
             <div class="stat-info">
                 <div class="stat-label">Total Customer</div>
                 <div class="stat-value">{{ number_format($stats['total_customers'] ?? 0) }}</div>
@@ -471,9 +467,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon-wrap" style="background: #FEF3C7; color: #D97706;">
-                🏙️
-            </div>
+            <div class="stat-icon-wrap" style="background: #FEF3C7; color: #D97706;">🏙️</div>
             <div class="stat-info">
                 <div class="stat-label">Sebaran Kota</div>
                 <div class="stat-value">{{ $stats['total_cities'] ?? 0 }} Kota</div>
@@ -481,9 +475,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon-wrap" style="background: #E0F2FE; color: #0284C7;">
-                ⭐
-            </div>
+            <div class="stat-icon-wrap" style="background: #E0F2FE; color: #0284C7;">⭐</div>
             <div class="stat-info">
                 <div class="stat-label">Segmen Retail & SME</div>
                 <div class="stat-value">{{ number_format(($stats['segments']['Retail'] ?? 0) + ($stats['segments']['SME'] ?? 0)) }}</div>
@@ -491,9 +483,7 @@
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon-wrap" style="background: #F3E8FF; color: #9333EA;">
-                💰
-            </div>
+            <div class="stat-icon-wrap" style="background: #F3E8FF; color: #9333EA;">💰</div>
             <div class="stat-info">
                 <div class="stat-label">Rata-rata Pendapatan</div>
                 <div class="stat-value">Rp {{ number_format($stats['avg_income'] ?? 0, 0, ',', '.') }}</div>
@@ -502,11 +492,60 @@
     </div>
 
 
-    {{-- ========================================================================= --}}
-    {{-- //dashboard (kosongkan) --}}
-    {{-- Bagian ini dikosongkan sesuai instruksi user untuk porsi tim modul dashboard --}}
-    {{-- ========================================================================= --}}
-    <div class="placeholder-module" id="section-dashboard">
+    <div class="row mb-5">
+        <div class="col-12 mb-3">
+            <h4 class="font-weight-bold text-dark">📊 Grafik Analitik Keuangan & Customer</h4>
+        </div>
+
+        <!-- Grafik 1: Tren Pendapatan -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">1. Tren Pendapatan Bulanan</h6>
+                <canvas id="chartPendapatan" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 2: Statistik Pengeluaran -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">2. Statistik Pengeluaran</h6>
+                <canvas id="chartPengeluaran" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 3: Sebaran Segmen -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">3. Sebaran Segmen Customer</h6>
+                <canvas id="chartSegmen" height="400"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 4: Rasio Gender -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">4. Rasio Gender Customer</h6>
+                <canvas id="chartGender" height="400"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 5: Top 5 Kota -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">5. Top 5 Kota Asal Customer</h6>
+                <canvas id="chartKota" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 6: Margin Laba Netto -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">6. Margin Laba Netto</h6>
+                <canvas id="chartMargin" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    {{-- <div class="placeholder-module" id="section-dashboard">
         <div style="display: flex; align-items: center; gap: 14px;">
             <div style="width: 44px; height: 44px; border-radius: 12px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
                 📊
@@ -524,7 +563,7 @@
         <div style="font-size: 0.78rem; font-weight: 700; color: #94A3B8; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid #CBD5E1;">
             Status: Kosongkan
         </div>
-    </div>
+    </div> --}}
 
 
     {{-- ========================================================================= --}}
@@ -535,18 +574,13 @@
         <div class="filter-bar">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <span class="placeholder-badge" style="background: #E8F8EE; color: #00880D; border: 1px solid #A7F3D0;">
-                            //tabel customer (disini akan ada tabel 10 baris dan ada paginasi per 10 data tabel)
-                        </span>
-                    </div>
                     <h2 style="font-size: 1.35rem; color: #0F172A; display: flex; align-items: center; gap: 8px;">
                         <span>📋</span>
                         <span>Tabel Data Customer</span>
                         <span style="font-size: 0.75rem; background: #00AA13; color: white; padding: 2px 8px; border-radius: 6px; font-weight: 700;">10 Baris / Halaman</span>
                     </h2>
                     <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 2px;">
-                        Sumber data: <code>storage/app/data/customers.csv</code> &bull; Cari, filter, tambah, perbarui, dan kelola data pelanggan.
+                        Sumber data: <code>storage/app/data/customers.csv</code>
                     </p>
                 </div>
                 <a href="{{ route('customers.create') }}" class="btn-3d btn-primary">
@@ -559,11 +593,7 @@
             <form action="{{ route('dashboard.table') }}" method="GET" class="filter-inputs">
                 <div class="search-group">
                     <i data-lucide="search" class="search-icon-inside" style="width: 18px; height: 18px;"></i>
-                    <input type="text" 
-                           name="search" 
-                           value="{{ request('search') }}" 
-                           class="search-input" 
-                           placeholder="Cari ID, Nama, Kota, atau Pekerjaan...">
+                    <input type="text" name="search" value="{{ request('search') }}" class="search-input" placeholder="Cari ID, Nama, Kota, atau Pekerjaan...">
                 </div>
 
                 <select name="segment" class="select-filter" onchange="this.form.submit()">
@@ -595,7 +625,6 @@
             </form>
         </div>
 
-        <!-- Tabel Customer (10 Baris per Halaman) -->
         <div class="table-container">
             <div class="table-responsive">
                 <table class="customer-table">
@@ -616,9 +645,7 @@
                     <tbody>
                         @forelse($customers as $customer)
                             <tr>
-                                <td>
-                                    <span class="customer-id-pill">{{ $customer['customer_id'] ?? '-' }}</span>
-                                </td>
+                                <td><span class="customer-id-pill">{{ $customer['customer_id'] ?? '-' }}</span></td>
                                 <td>
                                     <div class="customer-name-cell">
                                         <div class="avatar-circle">
@@ -626,10 +653,10 @@
                                         </div>
                                         <div>
                                             <div style="font-weight: 800; color: #0F172A;">
-                                                {{ $customer['full_name'] ?? ($customer['fisrt_name'] . ' ' . $customer['second_name']) }}
+                                                {{ $customer['full_name'] ?? ($customer['first_name'] . ' ' . $customer['second_name']) }}
                                             </div>
                                             <div style="font-size: 0.75rem; color: #64748B;">
-                                                {{ $customer['fisrt_name'] ?? '' }} (Depan)
+                                                {{ $customer['first_name'] ?? '' }} (Depan)
                                             </div>
                                         </div>
                                     </div>
@@ -641,18 +668,12 @@
                                         <span class="badge-gender-female">👩 Female</span>
                                     @endif
                                 </td>
-                                <td style="white-space: nowrap;">
-                                    <span style="font-family: monospace; font-size: 0.85rem; color: #334155;">
-                                        {{ $customer['date_of_birth'] ?? '-' }}
-                                    </span>
-                                </td>
+                                <td style="white-space: nowrap;"><span style="font-family: monospace; font-size: 0.85rem; color: #334155;">{{ $customer['date_of_birth'] ?? '-' }}</span></td>
                                 <td>
                                     <div style="font-weight: 700; color: #1E293B;">{{ $customer['city'] ?? '-' }}</div>
                                     <div style="font-size: 0.76rem; color: #64748B;">{{ $customer['state'] ?? '-' }}</div>
                                 </td>
-                                <td>
-                                    <span style="font-weight: 600; color: #334155;">{{ $customer['occupation'] ?? '-' }}</span>
-                                </td>
+                                <td><span style="font-weight: 600; color: #334155;">{{ $customer['occupation'] ?? '-' }}</span></td>
                                 <td>
                                     @php
                                         $seg = strtolower($customer['customer_segment'] ?? '');
@@ -678,32 +699,15 @@
                                         <span>{{ $customer['customer_segment'] ?? 'Retail' }}</span>
                                     </span>
                                 </td>
-                                <td>
-                                    <span class="income-text">
-                                        Rp {{ number_format((float) ($customer['annual_income'] ?? 0), 2, ',', '.') }}
-                                    </span>
-                                </td>
-                                <td style="white-space: nowrap;">
-                                    <span style="font-family: monospace; font-size: 0.85rem; color: #475569;">
-                                        {{ $customer['join_date'] ?? '-' }}
-                                    </span>
-                                </td>
+                                <td><span class="income-text">Rp {{ number_format((float) ($customer['annual_income'] ?? 0), 2, ',', '.') }}</span></td>
+                                <td style="white-space: nowrap;"><span style="font-family: monospace; font-size: 0.85rem; color: #475569;">{{ $customer['join_date'] ?? '-' }}</span></td>
                                 <td>
                                     <div class="action-group" style="justify-content: center;">
-                                        <!-- Tombol Edit / Update -->
-                                        <a href="{{ route('customers.edit', $customer['customer_id']) }}" 
-                                           class="btn-3d btn-secondary btn-sm" 
-                                           title="Edit customer {{ $customer['customer_id'] }}">
+                                        <a href="{{ route('customers.edit', $customer['customer_id']) }}" class="btn-3d btn-secondary btn-sm" title="Edit customer {{ $customer['customer_id'] }}">
                                             <i data-lucide="edit-3" style="width: 14px; height: 14px; color: #0284C7;"></i>
                                             <span>Edit</span>
                                         </a>
-
-                                        <!-- Tombol Hapus -->
-                                        <button type="button" 
-                                                onclick="openDeleteModal('{{ $customer['customer_id'] }}', '{{ addslashes($customer['full_name']) }}')" 
-                                                class="btn-3d btn-secondary btn-sm" 
-                                                style="color: #EF4444;"
-                                                title="Hapus customer {{ $customer['customer_id'] }}">
+                                        <button type="button" onclick="openDeleteModal('{{ $customer['customer_id'] }}', '{{ addslashes($customer['full_name']) }}')" class="btn-3d btn-secondary btn-sm" style="color: #EF4444;">
                                             <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                         </button>
                                     </div>
@@ -714,12 +718,7 @@
                                 <td colspan="10" style="text-align: center; padding: 48px 20px;">
                                     <div style="font-size: 3rem; margin-bottom: 12px;">🔍</div>
                                     <h3 style="font-size: 1.15rem; color: #1E293B; margin-bottom: 6px;">Tidak ada data customer yang cocok</h3>
-                                    <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 16px;">
-                                        Coba periksa kata kunci pencarian atau bersihkan filter yang aktif.
-                                    </p>
-                                    <a href="{{ route('dashboard.table') }}" class="btn-3d btn-secondary btn-sm">
-                                        Reset Filter
-                                    </a>
+                                    <a href="{{ route('dashboard.table') }}" class="btn-3d btn-secondary btn-sm">Reset Filter</a>
                                 </td>
                             </tr>
                         @endforelse
@@ -727,34 +726,24 @@
                 </table>
             </div>
 
-            <!-- Paginasi Per 10 Data Tabel (Sesuai Instruksi User) -->
             <div class="pagination-bar">
                 <div class="pagination-info">
-                    Menampilkan <strong>{{ $customers->firstItem() ?? 0 }}</strong> - <strong>{{ $customers->lastItem() ?? 0 }}</strong> dari <strong>{{ number_format($customers->total()) }}</strong> data customer (10 baris / halaman)
+                    Menampilkan <strong>{{ $customers->firstItem() ?? 0 }}</strong> - <strong>{{ $customers->lastItem() ?? 0 }}</strong> dari <strong>{{ number_format($customers->total()) }}</strong> data customer
                 </div>
 
                 <div class="pagination-controls">
-                    <!-- Tombol Halaman Pertama -->
                     @if($customers->currentPage() > 1)
-                        <a href="{{ $customers->appends(request()->query())->url(1) }}" class="page-btn" title="Halaman Pertama">
-                            &laquo;
-                        </a>
+                        <a href="{{ $customers->appends(request()->query())->url(1) }}" class="page-btn">&laquo;</a>
                     @else
                         <span class="page-btn disabled">&laquo;</span>
                     @endif
 
-                    <!-- Tombol Sebelumnya -->
                     @if($customers->onFirstPage())
-                        <span class="page-btn disabled">
-                            <i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i>
-                        </span>
+                        <span class="page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i></span>
                     @else
-                        <a href="{{ $customers->appends(request()->query())->previousPageUrl() }}" class="page-btn">
-                            <i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i>
-                        </a>
+                        <a href="{{ $customers->appends(request()->query())->previousPageUrl() }}" class="page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i></a>
                     @endif
 
-                    <!-- Nomor Halaman Sekitar Halaman Aktif -->
                     @php
                         $current = $customers->currentPage();
                         $last = $customers->lastPage();
@@ -823,53 +812,40 @@
         </div>
     </section>
 
+    <!-- Modul Tabel Transaksi -->
+    <section id="section-tabel-transaksi">
+        @include('transaction.index')
+    </section>
 
-    {{-- ========================================================================= --}}
-    {{-- //tabeltransaction(kosongkan) --}}
-    {{-- Bagian ini dikosongkan sesuai instruksi user untuk porsi modul tabel transaksi --}}
-    {{-- ========================================================================= --}}
-    <div class="placeholder-module" id="section-tabeltransaction" style="margin-top: 10px;">
-        <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 44px; height: 44px; border-radius: 12px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                💳
-            </div>
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="placeholder-badge">//tabeltransaction(kosongkan)</span>
-                    <strong style="color: #475569; font-size: 0.95rem;">Modul Tabel Transaksi Keuangan</strong>
-                </div>
-                <div style="font-size: 0.82rem; color: #64748B; margin-top: 3px;">
-                    Area ini sengaja dikosongkan (reserved) untuk pengerjaan anggota tim modul Tabel Transaksi Keuangan.
-                </div>
-            </div>
-        </div>
-        <div style="font-size: 0.78rem; font-weight: 700; color: #94A3B8; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid #CBD5E1;">
-            Status: Kosongkan
-        </div>
-    </div>
-
-
-    <!-- Modal Konfirmasi Hapus Customer -->
-    <div id="deleteModal" class="modal-overlay">
-        <div class="modal-content">
-            <div style="width: 64px; height: 64px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px;">
+    <!-- Modal Konfirmasi Hapus Custom (Tepat di Tengah Layar) -->
+    <div id="custom-delete-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+        <div style="background: white; border: 2.5px solid #E2E8F0; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.2); width: 100%; max-width: 420px; padding: 28px; text-align: center; animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            
+            <div style="width: 70px; height: 70px; background: #FEF2F2; border: 2px solid #FCA5A5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 2rem;">
                 🗑️
             </div>
+
             <h3 style="font-size: 1.25rem; font-weight: 800; color: #0F172A; margin-bottom: 8px;">
-                Hapus Customer?
+                Konfirmasi Hapus Data
             </h3>
-            <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 20px;">
-                Apakah kamu yakin ingin menghapus data customer <strong id="deleteCustomerName" style="color: #0F172A;"></strong> (<span id="deleteCustomerId" style="font-family: monospace;"></span>) dari file <code>customers.csv</code>?
+            
+            <p id="modal-delete-text" style="font-size: 0.92rem; color: #64748B; margin-bottom: 24px; line-height: 1.5;">
+                Apakah Anda yakin ingin menghapus data ini?
             </p>
 
-            <form id="deleteForm" method="POST" action="">
+            <form id="custom-delete-form" method="POST">
                 @csrf
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button type="button" onclick="closeDeleteModal()" class="btn-3d btn-secondary" style="flex: 1;">
+                <input type="hidden" name="_method" id="custom-delete-method" value="DELETE">
+                
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button type="button" onclick="closeDeleteModal()" 
+                            style="flex: 1; padding: 10px 18px; background: #F1F5F9; color: #475569; border: 2px solid #E2E8F0; border-bottom: 3.5px solid #CBD5E1; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 0.9rem;">
                         Batal
                     </button>
-                    <button type="submit" class="btn-3d btn-danger" style="flex: 1;">
-                        Ya, Hapus Data
+                    
+                    <button type="submit" 
+                            style="flex: 1; padding: 10px 18px; background: #EF4444; color: white; border: none; border-bottom: 3.5px solid #DC2626; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 0.9rem;">
+                        Ya, Hapus!
                     </button>
                 </div>
             </form>
@@ -880,22 +856,45 @@
 
 @push('scripts')
 <script>
+    // Modal Hapus Customer
     function openDeleteModal(id, name) {
-        document.getElementById('deleteCustomerId').innerText = id;
-        document.getElementById('deleteCustomerName').innerText = name;
-        document.getElementById('deleteForm').action = "{{ url('/delete-customer') }}/" + encodeURIComponent(id);
-        document.getElementById('deleteModal').classList.add('show');
+        let modal = document.getElementById('custom-delete-modal');
+        let form = document.getElementById('custom-delete-form');
+        let text = document.getElementById('modal-delete-text');
+        let method = document.getElementById('custom-delete-method');
+
+        text.innerHTML = 'Apakah Anda yakin ingin menghapus customer <strong style="color: #0F172A;">' + name + ' (' + id + ')</strong>? Data tidak bisa dikembalikan.';
+        form.action = '/delete-customer/' + id;
+        method.value = 'POST';
+
+        modal.style.display = 'flex';
     }
 
+    // Modal Hapus Transaksi
+    function openDeleteTransaksiModal(id, bulan) {
+        let modal = document.getElementById('custom-delete-modal');
+        let form = document.getElementById('custom-delete-form');
+        let text = document.getElementById('modal-delete-text');
+        let method = document.getElementById('custom-delete-method');
+
+        text.innerHTML = 'Apakah Anda yakin ingin menghapus data transaksi bulan <strong style="color: #0F172A;">' + bulan + '</strong>? Data tidak bisa dikembalikan.';
+        form.action = '/transaction/' + id;
+        method.value = 'DELETE';
+
+        modal.style.display = 'flex';
+    }
+
+    // Tutup Modal
     function closeDeleteModal() {
-        document.getElementById('deleteModal').classList.remove('show');
+        document.getElementById('custom-delete-modal').style.display = 'none';
     }
 
-    // Tutup modal jika klik overlay
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-        if (e.target === this) {
+    // Tutup modal jika user klik area luar kotak
+    window.onclick = function(event) {
+        let modal = document.getElementById('custom-delete-modal');
+        if (event.target == modal) {
             closeDeleteModal();
         }
-    });
+    }
 </script>
 @endpush

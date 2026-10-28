@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Services\CustomerCsvService;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class CustomerCsvCrudTest extends TestCase
@@ -12,7 +14,7 @@ class CustomerCsvCrudTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->csvService = new CustomerCsvService();
+        $this->csvService = new CustomerCsvService;
     }
 
     public function test_dashboard_and_tabel_endpoint_loads_successfully_and_contains_required_markers(): void
@@ -39,6 +41,11 @@ class CustomerCsvCrudTest extends TestCase
     public function test_create_update_and_delete_customer_flow_directly_on_csv(): void
     {
         $testId = 'CTEST999';
+        $query = \Mockery::mock(Builder::class);
+        $query->shouldReceive('updateOrInsert')->twice()->andReturnTrue();
+        $query->shouldReceive('where')->once()->with('customer_id', $testId)->andReturnSelf();
+        $query->shouldReceive('delete')->once()->andReturn(1);
+        DB::shouldReceive('table')->with('customers')->times(3)->andReturn($query);
 
         // 1. Pastikan ID test belum ada
         $this->csvService->delete($testId);
@@ -69,7 +76,7 @@ class CustomerCsvCrudTest extends TestCase
         $this->assertEquals('Santoso', $found['second_name']);
 
         // 3. Test edit page GET /update-customer/{id}
-        $editResponse = $this->get('/update-customer/' . $testId);
+        $editResponse = $this->get('/update-customer/'.$testId);
         $editResponse->assertStatus(200);
         $editResponse->assertSee($testId);
         $editResponse->assertSee('Budi');
@@ -101,7 +108,7 @@ class CustomerCsvCrudTest extends TestCase
         $this->assertEquals('Premium', $updatedFound['customer_segment']);
 
         // 5. Hapus customer test dari CSV agar data tetap bersih
-        $deleteResponse = $this->post('/delete-customer/' . $testId);
+        $deleteResponse = $this->post('/delete-customer/'.$testId);
         $deleteResponse->assertRedirect('/dashboard-and-tabel');
 
         // Verifikasi customer sudah terhapus dari file CSV

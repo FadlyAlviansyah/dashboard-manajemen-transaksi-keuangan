@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Schema;
 class ImportData extends Command
 {
     protected $signature = 'data:import {--fresh : Kosongkan tabel sebelum import}';
-    protected $description = 'Import dan bersihkan customers.csv dan finance_transactions.csv';
+
+    protected $description = 'Import dan bersihkan customers.csv dan transactions.csv';
 
     public function handle(): int
     {
@@ -32,7 +33,9 @@ class ImportData extends Command
     private function importCustomers(): void
     {
         $now = now();
-        $batch = []; $read = 0; $inserted = 0;
+        $batch = [];
+        $read = 0;
+        $inserted = 0;
 
         foreach ($this->readCsv(storage_path('app/data/customers.csv')) as $r) {
             $read++;
@@ -65,35 +68,35 @@ class ImportData extends Command
 
     private function importTransactions(): void
     {
-        $now = now();
-        $batch = []; $seen = [];
-        $read = 0; $inserted = 0; $dupes = 0; $nonPositive = 0;
+        $batch = [];
+        $seen = [];
+        $read = 0;
+        $inserted = 0;
+        $dupes = 0;
 
-        foreach ($this->readCsv(storage_path('app/data/finance_transactions.csv')) as $r) {
+        foreach ($this->readCsv(storage_path('app/data/transactions.csv')) as $r) {
             $read++;
 
-            if (isset($seen[$r['transaction_id']])) {
+            if (isset($seen[$r['id']])) {
                 $dupes++;
+
                 continue;
             }
-            $seen[$r['transaction_id']] = true;
-
-            if ((float) $r['amount'] <= 0) {
-                $nonPositive++;
-            }
+            $seen[$r['id']] = true;
 
             $batch[] = [
-                'transaction_id' => $r['transaction_id'],
-                'transaction_date' => $this->date($r['transaction_date']),
-                'customer_id' => $r['customer_id'],
-                'transaction_type' => $r['transaction_type'],
-                'channel' => str_replace('@', 'o', $r['channel']),
-                'merchant_category' => $r['merchant_category'],
-                'amount' => $r['amount'],
-                'transaction_status' => $r['transaction_status'],
-                'is_fraud' => strtolower($r['is_fraud']) === 'yes' ? 1 : 0,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'id' => $r['id'],
+                'bulan' => $r['bulan'],
+                'pendapatan' => $r['pendapatan'],
+                'pengeluaran' => $r['pengeluaran'],
+                'm1_pen' => $r['m1_pen'],
+                'm1_peng' => $r['m1_peng'],
+                'm2_pen' => $r['m2_pen'],
+                'm2_peng' => $r['m2_peng'],
+                'm3_pen' => $r['m3_pen'],
+                'm3_peng' => $r['m3_peng'],
+                'm4_pen' => $r['m4_pen'],
+                'm4_peng' => $r['m4_peng'],
             ];
 
             if (count($batch) === 1000) {
@@ -108,7 +111,6 @@ class ImportData extends Command
         }
 
         $this->info("Transactions: dibaca $read, masuk $inserted, duplikat dilewati $dupes");
-        $this->warn("Transaksi dengan amount <= 0: $nonPositive (tunggu keputusan tim)");
     }
 
     private function readCsv(string $path): \Generator

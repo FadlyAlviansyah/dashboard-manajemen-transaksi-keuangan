@@ -12,18 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transactions', function (Blueprint $table) {
-            $table->string('transaction_id', 12)->primary();
-            $table->date('transaction_date')->index();
-            $table->string('customer_id', 10)->index();
-            $table->string('transaction_type', 30)->index();
-            $table->string('channel', 30)->index();
-            $table->string('merchant_category', 40)->index();
-            $table->decimal('amount', 15, 2);
-            $table->string('transaction_status', 20)->index();
-            $table->boolean('is_fraud')->default(false)->index();
+            $table->id();
+            $table->string('bulan', 30);
+            $table->decimal('pendapatan', 15, 2);
+            $table->decimal('pengeluaran', 15, 2);
+            $table->decimal('m1_pen', 15, 2);
+            $table->decimal('m1_peng', 15, 2);
+            $table->decimal('m2_pen', 15, 2);
+            $table->decimal('m2_peng', 15, 2);
+            $table->decimal('m3_pen', 15, 2);
+            $table->decimal('m3_peng', 15, 2);
+            $table->decimal('m4_pen', 15, 2);
+            $table->decimal('m4_peng', 15, 2);
             $table->timestamps();
-        
-            $table->foreign('customer_id')->references('customer_id')->on('customers');
         });
     }
 

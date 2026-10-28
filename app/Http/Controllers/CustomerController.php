@@ -16,55 +16,34 @@ class CustomerController extends Controller
         $this->csvService = $csvService;
     }
 
-    /**
-     * Endpoint: /dashboard-and-tabel
-     * Menampilkan dashboard utama dan tabel customer
-     */
     public function dashboardAndTable(Request $request): View
     {
-        // ==========================================
-        // dashboard (kosongkan)
-        // Bagian ini dicadangkan untuk modul dashboard analitik
-        // ==========================================
-        $dashboardData = []; // kosongkan sesuai instruksi
-
-
-        // ==========================================
-        // tabel customer (disini akan ada tabel 10 baris dan ada paginasi per 10 data tabel)
-        // CRUD customer langsung membaca dan menulis file storage/app/data/customers.csv
-        // ==========================================
         $search = $request->input('search');
         $segment = $request->input('segment');
         $gender = $request->input('gender');
         $page = (int) $request->input('page', 1);
-        $perPage = 10; // 10 baris per tabel sesuai instruksi
+        $perPage = 10;
 
         $customers = $this->csvService->paginate($perPage, $page, $search, $segment, $gender);
         $stats = $this->csvService->getSummaryStats();
         $nextId = $this->csvService->generateNextId();
 
+        $transactionController = app(TransactionController::class);
+        $transactionResponse = $transactionController->index();
+        $transactionData = method_exists($transactionResponse, 'getData')
+            ? $transactionResponse->getData(true)
+            : [];
 
-        // ==========================================
-        // tabeltransaction(kosongkan)
-        // Bagian ini dicadangkan untuk tabel transaksi
-        // ==========================================
-        $transactionData = []; // kosongkan sesuai instruksi
-
-
-        return view('dashboard-and-tabel', compact(
-            'customers',
-            'stats',
-            'nextId',
-            'search',
-            'segment',
-            'gender'
-        ));
+        return view('dashboard-and-tabel', array_merge([
+            'customers' => $customers,
+            'stats' => $stats,
+            'nextId' => $nextId,
+            'search' => $search,
+            'segment' => $segment,
+            'gender' => $gender,
+        ], $transactionData));
     }
 
-    /**
-     * Endpoint: GET /create-customer
-     * Menampilkan formulir penambahan customer baru
-     */
     public function create(): View
     {
         $nextId = $this->csvService->generateNextId();
@@ -74,10 +53,6 @@ class CustomerController extends Controller
         return view('create-customer', compact('nextId', 'segments', 'occupations'));
     }
 
-    /**
-     * Endpoint: POST /create-customer
-     * Menyimpan customer baru ke storage/app/data/customers.csv
-     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -105,29 +80,24 @@ class CustomerController extends Controller
             'annual_income.numeric' => 'Pendapatan tahunan harus berupa angka',
         ]);
 
-        // Simpan ke CSV via service
         $newCustomer = $this->csvService->create($validated);
 
         return redirect()->route('dashboard.table')
             ->with('success', "🎉 Customer {$newCustomer['full_name']} ({$newCustomer['customer_id']}) berhasil ditambahkan ke file customers.csv!");
     }
 
-    /**
-     * Endpoint: GET /update-customer atau GET /update-customer/{id}
-     * Menampilkan formulir edit customer berdasarkan ID dari customers.csv
-     */
     public function edit(Request $request, ?string $id = null): View|RedirectResponse
     {
         $customerId = $id ?? $request->query('id');
 
-        if (!$customerId) {
+        if (! $customerId) {
             return redirect()->route('dashboard.table')
                 ->with('error', '⚠️ Silakan pilih customer yang ingin diupdate dari tabel.');
         }
 
         $customer = $this->csvService->findById($customerId);
 
-        if (!$customer) {
+        if (! $customer) {
             return redirect()->route('dashboard.table')
                 ->with('error', "⚠️ Data customer dengan ID '{$customerId}' tidak ditemukan di file customers.csv.");
         }
@@ -138,15 +108,11 @@ class CustomerController extends Controller
         return view('update-customer', compact('customer', 'segments', 'occupations'));
     }
 
-    /**
-     * Endpoint: POST /update-customer atau PUT /update-customer/{id}
-     * Menyimpan pembaruan data customer ke storage/app/data/customers.csv
-     */
     public function update(Request $request, ?string $id = null): RedirectResponse
     {
         $customerId = $id ?? $request->input('customer_id');
 
-        if (!$customerId) {
+        if (! $customerId) {
             return redirect()->route('dashboard.table')
                 ->with('error', '⚠️ Customer ID tidak valid.');
         }
@@ -187,10 +153,6 @@ class CustomerController extends Controller
             ->with('error', "❌ Gagal memperbarui data customer {$customerId} di file customers.csv.");
     }
 
-    /**
-     * Endpoint: POST/DELETE /delete-customer/{id}
-     * Menghapus baris customer dari storage/app/data/customers.csv
-     */
     public function destroy(string $id): RedirectResponse
     {
         $deleted = $this->csvService->delete($id);

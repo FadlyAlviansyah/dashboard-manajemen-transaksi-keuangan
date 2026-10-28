@@ -6,22 +6,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    protected $primaryKey = 'transaction_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-
     protected $fillable = [
-        'transaction_id', 'transaction_date', 'customer_id', 'transaction_type', 'channel', 'merchant_category', 'amount', 'transaction_status', 'is_fraud',
+        'bulan',
+        'pendapatan',
+        'pengeluaran',
+        'm1_pen',
+        'm1_peng',
+        'm2_pen',
+        'm2_peng',
+        'm3_pen',
+        'm3_peng',
+        'm4_pen',
+        'm4_peng',
     ];
 
     protected $casts = [
-        'transaction_date' => 'date',
-        'amount' => 'decimal:2',
-        'is_fraud' => 'boolean',
+        'pendapatan' => 'decimal:2',
+        'pengeluaran' => 'decimal:2',
+        'm1_pen' => 'decimal:2',
+        'm1_peng' => 'decimal:2',
+        'm2_pen' => 'decimal:2',
+        'm2_peng' => 'decimal:2',
+        'm3_pen' => 'decimal:2',
+        'm3_peng' => 'decimal:2',
+        'm4_pen' => 'decimal:2',
+        'm4_peng' => 'decimal:2',
     ];
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
-    }
 }

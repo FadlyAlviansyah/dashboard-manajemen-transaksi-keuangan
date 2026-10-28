@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 class CustomerCsvService
@@ -44,11 +44,11 @@ class CustomerCsvService
     protected function ensureFileExists(): void
     {
         $dir = dirname($this->filePath);
-        if (!File::exists($dir)) {
+        if (! File::exists($dir)) {
             File::makeDirectory($dir, 0755, true);
         }
 
-        if (!File::exists($this->filePath)) {
+        if (! File::exists($this->filePath)) {
             $handle = fopen($this->filePath, 'w');
             fputcsv($handle, $this->headers);
             fclose($handle);
@@ -70,14 +70,12 @@ class CustomerCsvService
             return [];
         }
 
-        // Ambil header
         $rawHeader = fgetcsv($handle);
-        if (!$rawHeader) {
+        if (! $rawHeader) {
             fclose($handle);
             return [];
         }
 
-        // Bersihkan BOM UTF-8 jika ada pada kolom pertama
         $rawHeader[0] = ltrim($rawHeader[0], "\xEF\xBB\xBF");
         $header = array_map('trim', $rawHeader);
 
@@ -91,21 +89,19 @@ class CustomerCsvService
             }
 
             $row = array_combine($header, array_map('trim', $data));
-            
-            // Tambahkan alias first_name & full_name untuk kemudahan blade
+
             $firstName = $row['fisrt_name'] ?? ($row['first_name'] ?? '');
             $secondName = $row['second_name'] ?? '';
             $row['first_name'] = $firstName;
             $row['fisrt_name'] = $firstName;
-            $row['full_name'] = trim($firstName . ' ' . $secondName);
+            $row['full_name'] = trim($firstName.' '.$secondName);
 
-            // Filter pencarian
             if ($search !== null && $search !== '') {
                 $haystack = mb_strtolower(
-                    ($row['customer_id'] ?? '') . ' ' .
-                    $row['full_name'] . ' ' .
-                    ($row['city'] ?? '') . ' ' .
-                    ($row['state'] ?? '') . ' ' .
+                    ($row['customer_id'] ?? '').' '.
+                    $row['full_name'].' '.
+                    ($row['city'] ?? '').' '.
+                    ($row['state'] ?? '').' '.
                     ($row['occupation'] ?? '')
                 );
 
@@ -114,12 +110,10 @@ class CustomerCsvService
                 }
             }
 
-            // Filter segmen
             if ($segment && strcasecmp($row['customer_segment'] ?? '', $segment) !== 0) {
                 continue;
             }
 
-            // Filter gender
             if ($gender && strcasecmp($row['gender'] ?? '', $gender) !== 0) {
                 continue;
             }
@@ -132,9 +126,6 @@ class CustomerCsvService
         return $rows;
     }
 
-    /**
-     * Mengambil data customer dengan paginasi (default 10 baris per tabel)
-     */
     public function paginate(
         int $perPage = 10,
         int $page = 1,
@@ -161,9 +152,6 @@ class CustomerCsvService
         );
     }
 
-    /**
-     * Mencari data customer berdasarkan customer_id
-     */
     public function findById(string $id): ?array
     {
         $this->ensureFileExists();
@@ -174,7 +162,7 @@ class CustomerCsvService
         }
 
         $rawHeader = fgetcsv($handle);
-        if (!$rawHeader) {
+        if (! $rawHeader) {
             fclose($handle);
             return null;
         }
@@ -195,7 +183,8 @@ class CustomerCsvService
                 $firstName = $row['fisrt_name'] ?? ($row['first_name'] ?? '');
                 $row['first_name'] = $firstName;
                 $row['fisrt_name'] = $firstName;
-                $row['full_name'] = trim($firstName . ' ' . ($row['second_name'] ?? ''));
+                $row['full_name'] = trim($firstName.' '.($row['second_name'] ?? ''));
+
                 return $row;
             }
         }
@@ -204,9 +193,6 @@ class CustomerCsvService
         return null;
     }
 
-    /**
-     * Menghasilkan Customer ID berikutnya secara otomatis (misal C05001)
-     */
     public function generateNextId(): string
     {
         $this->ensureFileExists();
@@ -216,7 +202,7 @@ class CustomerCsvService
         if ($handle !== false) {
             $rawHeader = fgetcsv($handle);
             while (($data = fgetcsv($handle)) !== false) {
-                if (!empty($data[0])) {
+                if (! empty($data[0])) {
                     $id = trim($data[0]);
                     if (preg_match('/^C(\d+)$/i', $id, $matches)) {
                         $num = (int) $matches[1];
@@ -230,19 +216,15 @@ class CustomerCsvService
         }
 
         $nextNum = $maxNum + 1;
-        return 'C' . str_pad((string)$nextNum, 5, '0', STR_PAD_LEFT);
+        return 'C'.str_pad((string) $nextNum, 5, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Menambah customer baru ke file customers.csv
-     */
     public function create(array $data): array
     {
         $this->ensureFileExists();
 
-        $customerId = !empty($data['customer_id']) ? trim($data['customer_id']) : $this->generateNextId();
+        $customerId = ! empty($data['customer_id']) ? trim($data['customer_id']) : $this->generateNextId();
 
-        // Validasi keunikan ID
         if ($this->findById($customerId) !== null) {
             $customerId = $this->generateNextId();
         }
@@ -256,7 +238,7 @@ class CustomerCsvService
         $occupation = trim($data['occupation'] ?? 'Salaried');
         $customerSegment = trim($data['customer_segment'] ?? 'Retail');
         $annualIncome = number_format((float) str_replace([',', ' '], '', $data['annual_income'] ?? 0), 2, '.', '');
-        $joinDate = !empty($data['join_date']) ? $this->formatDateForCsv($data['join_date']) : Carbon::now()->format('d-m-Y');
+        $joinDate = ! empty($data['join_date']) ? $this->formatDateForCsv($data['join_date']) : Carbon::now()->format('d-m-Y');
 
         $newRow = [
             'customer_id' => $customerId,
@@ -272,10 +254,9 @@ class CustomerCsvService
             'join_date' => $joinDate,
         ];
 
-        // Tulis baris baru ke akhir file
         $handle = fopen($this->filePath, 'a');
         if ($handle === false) {
-            throw new \RuntimeException("Gagal membuka file customers.csv untuk penambahan data.");
+            throw new \RuntimeException('Gagal membuka file customers.csv untuk penambahan data.');
         }
 
         flock($handle, LOCK_EX);
@@ -283,26 +264,30 @@ class CustomerCsvService
         flock($handle, LOCK_UN);
         fclose($handle);
 
+        $this->syncToDatabase($newRow, true);
+
         $newRow['first_name'] = $firstName;
-        $newRow['full_name'] = trim($firstName . ' ' . $secondName);
+        $newRow['full_name'] = trim($firstName.' '.$secondName);
 
         return $newRow;
     }
 
-    /**
-     * Memperbarui data customer di file customers.csv
-     */
     public function update(string $customerId, array $data): bool
     {
         $this->ensureFileExists();
 
-        $tempPath = $this->filePath . '.tmp.' . uniqid();
+        $tempPath = $this->filePath.'.tmp.'.uniqid();
         $inHandle = fopen($this->filePath, 'r');
         $outHandle = fopen($tempPath, 'w');
 
         if ($inHandle === false || $outHandle === false) {
-            if ($inHandle) fclose($inHandle);
-            if ($outHandle) fclose($outHandle);
+            if ($inHandle) {
+                fclose($inHandle);
+            }
+            if ($outHandle) {
+                fclose($outHandle);
+            }
+
             return false;
         }
 
@@ -310,16 +295,16 @@ class CustomerCsvService
         flock($outHandle, LOCK_EX);
 
         $rawHeader = fgetcsv($inHandle);
-        if (!$rawHeader) {
+        if (! $rawHeader) {
             flock($outHandle, LOCK_UN);
             flock($inHandle, LOCK_UN);
             fclose($inHandle);
             fclose($outHandle);
             @unlink($tempPath);
+
             return false;
         }
 
-        // Tulis header asli kembali
         $rawHeader[0] = ltrim($rawHeader[0], "\xEF\xBB\xBF");
         $header = array_map('trim', $rawHeader);
         fputcsv($outHandle, $header);
@@ -329,31 +314,31 @@ class CustomerCsvService
         while (($row = fgetcsv($inHandle)) !== false) {
             if (count($row) < count($header)) {
                 fputcsv($outHandle, $row);
+
                 continue;
             }
 
             $rowData = array_combine($header, array_map('trim', $row));
             if (strcasecmp($rowData['customer_id'] ?? '', $customerId) === 0) {
-                // Update baris ini
                 $firstName = trim($data['fisrt_name'] ?? ($data['first_name'] ?? $rowData['fisrt_name']));
                 $secondName = trim($data['second_name'] ?? $rowData['second_name']);
                 $gender = trim($data['gender'] ?? $rowData['gender']);
-                
-                $dob = !empty($data['date_of_birth']) 
-                    ? $this->formatDateForCsv($data['date_of_birth']) 
+
+                $dob = ! empty($data['date_of_birth'])
+                    ? $this->formatDateForCsv($data['date_of_birth'])
                     : $rowData['date_of_birth'];
-                    
+
                 $city = trim($data['city'] ?? $rowData['city']);
                 $state = trim($data['state'] ?? $rowData['state']);
                 $occupation = trim($data['occupation'] ?? $rowData['occupation']);
                 $customerSegment = trim($data['customer_segment'] ?? $rowData['customer_segment']);
-                
-                $annualIncome = isset($data['annual_income']) 
-                    ? number_format((float) str_replace([',', ' '], '', $data['annual_income']), 2, '.', '') 
+
+                $annualIncome = isset($data['annual_income'])
+                    ? number_format((float) str_replace([',', ' '], '', $data['annual_income']), 2, '.', '')
                     : $rowData['annual_income'];
-                    
-                $joinDate = !empty($data['join_date']) 
-                    ? $this->formatDateForCsv($data['join_date']) 
+
+                $joinDate = ! empty($data['join_date'])
+                    ? $this->formatDateForCsv($data['join_date'])
                     : $rowData['join_date'];
 
                 $updatedRow = [
@@ -383,28 +368,43 @@ class CustomerCsvService
         fclose($outHandle);
 
         if ($updated) {
-            // Timpa file asli dengan file sementara secara aman
-            return copy($tempPath, $this->filePath) && @unlink($tempPath);
+            if (! copy($tempPath, $this->filePath)) {
+                @unlink($tempPath);
+
+                return false;
+            }
+
+            @unlink($tempPath);
+            $updatedCustomer = $this->findById($customerId);
+            if ($updatedCustomer === null) {
+                throw new \RuntimeException("Customer {$customerId} tidak ditemukan setelah file CSV diperbarui.");
+            }
+
+            $this->syncToDatabase($updatedCustomer);
+
+            return true;
         }
 
         @unlink($tempPath);
         return false;
     }
 
-    /**
-     * Menghapus baris customer dari customers.csv
-     */
     public function delete(string $customerId): bool
     {
         $this->ensureFileExists();
 
-        $tempPath = $this->filePath . '.tmp.' . uniqid();
+        $tempPath = $this->filePath.'.tmp.'.uniqid();
         $inHandle = fopen($this->filePath, 'r');
         $outHandle = fopen($tempPath, 'w');
 
         if ($inHandle === false || $outHandle === false) {
-            if ($inHandle) fclose($inHandle);
-            if ($outHandle) fclose($outHandle);
+            if ($inHandle) {
+                fclose($inHandle);
+            }
+            if ($outHandle) {
+                fclose($outHandle);
+            }
+
             return false;
         }
 
@@ -412,7 +412,7 @@ class CustomerCsvService
         flock($outHandle, LOCK_EX);
 
         $rawHeader = fgetcsv($inHandle);
-        if (!$rawHeader) {
+        if (! $rawHeader) {
             flock($outHandle, LOCK_UN);
             flock($inHandle, LOCK_UN);
             fclose($inHandle);
@@ -436,7 +436,8 @@ class CustomerCsvService
             $rowData = array_combine($header, array_map('trim', $row));
             if (strcasecmp($rowData['customer_id'] ?? '', $customerId) === 0) {
                 $deleted = true;
-                continue; // Lewati baris ini agar terhapus
+
+                continue;
             }
 
             fputcsv($outHandle, $row);
@@ -448,16 +449,46 @@ class CustomerCsvService
         fclose($outHandle);
 
         if ($deleted) {
-            return copy($tempPath, $this->filePath) && @unlink($tempPath);
+            if (! copy($tempPath, $this->filePath)) {
+                @unlink($tempPath);
+
+                return false;
+            }
+
+            @unlink($tempPath);
+            DB::table('customers')->where('customer_id', $customerId)->delete();
+
+            return true;
         }
 
         @unlink($tempPath);
+
         return false;
     }
 
-    /**
-     * Menghitung statistik ringkas untuk kartu dashboard customer
-     */
+    protected function syncToDatabase(array $customer, bool $isNew = false): void
+    {
+        $attributes = [
+            'name' => trim(($customer['fisrt_name'] ?? $customer['first_name'] ?? '').' '.($customer['second_name'] ?? '')),
+            'gender' => $customer['gender'],
+            'state' => $customer['state'],
+            'occupation' => $customer['occupation'],
+            'customer_segment' => $customer['customer_segment'],
+            'annual_income' => $customer['annual_income'],
+            'join_date' => Carbon::createFromFormat('d-m-Y', $customer['join_date'])->format('Y-m-d'),
+            'updated_at' => now(),
+        ];
+
+        if ($isNew) {
+            $attributes['created_at'] = now();
+        }
+
+        DB::table('customers')->updateOrInsert(
+            ['customer_id' => $customer['customer_id']],
+            $attributes
+        );
+    }
+
     public function getSummaryStats(): array
     {
         $this->ensureFileExists();
@@ -504,9 +535,6 @@ class CustomerCsvService
         ];
     }
 
-    /**
-     * Konversi format tanggal ke format CSV (d-m-Y)
-     */
     protected function formatDateForCsv(string $date): string
     {
         $date = trim($date);
@@ -521,6 +549,7 @@ class CustomerCsvService
             if (preg_match('/^\d{2}-\d{2}-\d{4}$/', $date)) {
                 return $date;
             }
+
             return Carbon::parse($date)->format('d-m-Y');
         } catch (\Throwable $e) {
             return $date;
