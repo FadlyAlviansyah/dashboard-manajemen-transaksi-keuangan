@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard Manajemen Transaksi & Customer') | Gojek x Duolingo Style</title>
+    <title>@yield('title', 'Dashboard Manajemen Transaksi & Customer') </title>
     
     <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -426,7 +426,7 @@
                     <i data-lucide="wallet"></i>
                 </div>
                 <div>
-                    <div class="brand-title">Fin<span>Track</span> <span style="font-size: 0.75rem; background: #00AA13; color: white; padding: 2px 8px; border-radius: 8px;">Gojek x Duolingo</span></div>
+                    <div class="brand-title">Fin<span>Track</span> </div>
                     <div class="brand-subtitle">Dashboard Manajemen Transaksi & Customer</div>
                 </div>
             </a>

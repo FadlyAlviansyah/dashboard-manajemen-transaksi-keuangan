@@ -404,46 +404,63 @@
         </div>
     </div>
 
-    <!-- Modul Dashboard Analitik Keuangan -->
-    <div style="margin-bottom: 30px;">
-        <h3 style="font-size: 1.15rem; font-weight: 800; color: #0F172A; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
-            <span>📊</span>
-            <span>Dashboard Analitik Keuangan</span>
-        </h3>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon-wrap" style="background: #E8F8EE; color: #00AA13;">📈</div>
-                <div class="stat-info">
-                    <div class="stat-label">Total Pendapatan</div>
-                    <div class="stat-value" style="color: #00AA13;">Rp {{ number_format($totalPendapatan ?? 0, 0, ',', '.') }}</div>
-                </div>
-            </div>
+ <!-- ========================================== -->
+    <!-- BAGIAN GRAFIK ANALITIK (MASUK DI BAWAH CARD) -->
+    <!-- ========================================== -->
+    <div class="row mb-5">
+        <div class="col-12 mb-3">
+            <h4 class="font-weight-bold text-dark">📊 Grafik Analitik Keuangan & Customer</h4>
+        </div>
 
-            <div class="stat-card">
-                <div class="stat-icon-wrap" style="background: #FEF2F2; color: #EF4444;">📉</div>
-                <div class="stat-info">
-                    <div class="stat-label">Total Pengeluaran</div>
-                    <div class="stat-value" style="color: #EF4444;">Rp {{ number_format($totalPengeluaran ?? 0, 0, ',', '.') }}</div>
-                </div>
+        <!-- Grafik 1: Tren Pendapatan -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">1. Tren Pendapatan Bulanan</h6>
+                <canvas id="chartPendapatan" height="100"></canvas>
             </div>
+        </div>
 
-            <div class="stat-card">
-                <div class="stat-icon-wrap" style="background: #E0F2FE; color: #0284C7;">💵</div>
-                <div class="stat-info">
-                    <div class="stat-label">Total Laba Netto</div>
-                    <div class="stat-value" style="color: #0284C7;">Rp {{ number_format($totalLaba ?? 0, 0, ',', '.') }}</div>
-                </div>
+        <!-- Grafik 2: Statistik Pengeluaran -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">2. Statistik Pengeluaran</h6>
+                <canvas id="chartPengeluaran" height="100"></canvas>
             </div>
+        </div>
 
-            <div class="stat-card">
-                <div class="stat-icon-wrap" style="background: #F3E8FF; color: #9333EA;">🎯</div>
-                <div class="stat-info">
-                    <div class="stat-label">Rata-rata Margin</div>
-                    <div class="stat-value" style="color: #9333EA;">{{ number_format($totalMargin ?? 0, 1) }}%</div>
-                </div>
+        <!-- Grafik 3: Sebaran Segmen -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">3. Sebaran Segmen Customer</h6>
+                <canvas id="chartSegmen" height="400"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 4: Rasio Gender -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">4. Rasio Gender Customer</h6>
+                <canvas id="chartGender" height="400"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 5: Top 5 Kota -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">5. Top 5 Kota Asal Customer</h6>
+                <canvas id="chartKota" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Grafik 6: Margin Laba Netto -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3 border-0 rounded-4">
+                <h6 class="text-muted font-weight-bold mb-3">6. Margin Laba Netto</h6>
+                <canvas id="chartMargin" height="100"></canvas>
             </div>
         </div>
     </div>
+    <!-- ========================================== -->
 
     <!-- Tabel Data Customer -->
     <section id="section-tabel-customer">
@@ -728,6 +745,109 @@
         if (event.target == modal) {
             closeDeleteModal();
         }
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. Chart Pendapatan
+    const ctx1 = document.getElementById('chartPendapatan');
+    if (ctx1) {
+        new Chart(ctx1.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: [10000000, 15000000, 12000000, 25000000, 20000000, 34300000],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            }
+        });
+    }
+
+    // 2. Chart Pengeluaran
+    const ctx2 = document.getElementById('chartPengeluaran');
+    if (ctx2) {
+        new Chart(ctx2.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Pengeluaran (Rp)',
+                    data: [5000000, 4000000, 6000000, 3000000, 2000000, 20300000],
+                    backgroundColor: '#dc3545'
+                }]
+            }
+        });
+    }
+
+    // 3. Chart Segmen
+    const ctx3 = document.getElementById('chartSegmen');
+if (ctx3) {
+    new Chart(ctx3.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Retail', 'SME', 'Premium'],
+            datasets: [{
+                data: [1500, 2000, 1501],
+                backgroundColor: ['#ffc107', '#17a2b8', '#6f42c1']
+            }]
+        },
+
+    });
+}
+
+    // 4. Chart Gender
+    const ctx4 = document.getElementById('chartGender');
+    if (ctx4) {
+        new Chart(ctx4.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: ['Laki-laki', 'Perempuan'],
+                datasets: [{
+                    data: [3200, 1801],
+                    backgroundColor: ['#007bff', '#e83e8c']
+                }]
+            }
+
+        });
+    }
+
+    // 5. Chart Kota
+    const ctx5 = document.getElementById('chartKota');
+    if (ctx5) {
+        new Chart(ctx5.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Jakarta', 'Bogor', 'Bandung', 'Depok', 'Bekasi'],
+                datasets: [{
+                    label: 'Jumlah Customer',
+                    data: [1200, 950, 800, 600, 451],
+                    backgroundColor: '#20c997'
+                }]
+            },
+            options: { indexAxis: 'y' }
+        });
+    }
+
+    // 6. Chart Margin
+    const ctx6 = document.getElementById('chartMargin');
+    if (ctx6) {
+        new Chart(ctx6.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Margin (%)',
+                    data: [50, 65, 55, 80, 75, 96.2],
+                    borderColor: '#fd7e14',
+                    tension: 0.2
+                }]
+            }
+        });
     }
 </script>
 @endpush
