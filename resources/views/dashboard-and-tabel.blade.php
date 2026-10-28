@@ -78,6 +78,80 @@
         margin-bottom: 30px;
     }
 
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        margin-bottom: 32px;
+    }
+
+    .analytics-card {
+        min-width: 0;
+        background: #FFFFFF;
+        border: 2px solid var(--border-card);
+        border-radius: var(--radius-lg);
+        padding: 22px;
+        box-shadow: 0 5px 0 #E2E8F0;
+    }
+
+    .analytics-card-wide {
+        grid-column: 1 / -1;
+    }
+
+    .analytics-heading {
+        margin-bottom: 18px;
+    }
+
+    .analytics-heading h3 {
+        margin: 0;
+        color: #0F172A;
+        font-size: 1.12rem;
+        font-weight: 800;
+    }
+
+    .analytics-heading p {
+        margin: 4px 0 0;
+        color: #64748B;
+        font-size: 0.86rem;
+    }
+
+    .chart-frame {
+        position: relative;
+        height: 300px;
+    }
+
+    .customer-chart-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .customer-chart-grid h4 {
+        margin: 0 0 12px;
+        color: #334155;
+        font-size: 0.92rem;
+    }
+
+    .customer-chart-frame {
+        position: relative;
+        height: 260px;
+    }
+
+    @media (max-width: 760px) {
+        .analytics-grid,
+        .customer-chart-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .analytics-card-wide {
+            grid-column: auto;
+        }
+
+        .chart-frame {
+            height: 260px;
+        }
+    }
+
     .stat-card {
         background: white;
         border: 2.5px solid var(--border-card);
@@ -490,59 +564,58 @@
         </div>
     </div>
 
-    <div class="row mb-5">
-        <div class="col-12 mb-3">
-            <h4 class="font-weight-bold text-dark">📊 Grafik Analitik Keuangan & Customer</h4>
-        </div>
-
-        <!-- Grafik 1: Tren Pendapatan -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3 border-0 rounded-4">
-                <h6 class="text-muted font-weight-bold mb-3">1. Tren Pendapatan Bulanan</h6>
-                <canvas id="chartPendapatan" height="100"></canvas>
+    <section class="analytics-grid" aria-labelledby="analytics-title">
+        <div class="analytics-card">
+            <div class="analytics-heading">
+                <h3 id="analytics-title">1. Pendapatan & Pengeluaran</h3>
+                <p>Perbandingan nilai per bulan dari data transaksi.</p>
+            </div>
+            <div class="chart-frame">
+                <canvas id="chartKeuangan" role="img" aria-label="Grafik pendapatan dan pengeluaran per bulan"></canvas>
             </div>
         </div>
 
-        <!-- Grafik 2: Statistik Pengeluaran -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3 border-0 rounded-4">
-                <h6 class="text-muted font-weight-bold mb-3">2. Statistik Pengeluaran</h6>
-                <canvas id="chartPengeluaran" height="100"></canvas>
+        <div class="analytics-card">
+            <div class="analytics-heading">
+                <h3>2. Margin Laba</h3>
+                <p>Persentase laba terhadap pendapatan per bulan.</p>
+            </div>
+            <div class="chart-frame">
+                <canvas id="chartMargin" role="img" aria-label="Grafik margin laba per bulan"></canvas>
             </div>
         </div>
 
-        <!-- Grafik 3: Sebaran Segmen -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3 border-0 rounded-4">
-                <h6 class="text-muted font-weight-bold mb-3">3. Sebaran Segmen Customer</h6>
-                <canvas id="chartSegmen" height="400"></canvas>
+        <div class="analytics-card analytics-card-wide">
+            <div class="analytics-heading">
+                <h3>3. Informasi Customer</h3>
+                <p>
+                    {{ number_format($stats['total_customers'] ?? 0) }} customer
+                    &middot; {{ $stats['total_cities'] ?? 0 }} kota
+                    &middot; rata-rata pendapatan tahunan Rp {{ number_format($stats['avg_income'] ?? 0, 0, ',', '.') }}
+                </p>
+            </div>
+            <div class="customer-chart-grid">
+                <div>
+                    <h4>Segmen</h4>
+                    <div class="customer-chart-frame">
+                        <canvas id="chartSegmen" role="img" aria-label="Distribusi customer berdasarkan segmen"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h4>Gender</h4>
+                    <div class="customer-chart-frame">
+                        <canvas id="chartGender" role="img" aria-label="Distribusi customer berdasarkan gender"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h4>5 Kota dengan Customer Terbanyak</h4>
+                    <div class="customer-chart-frame">
+                        <canvas id="chartKota" role="img" aria-label="Lima kota dengan customer terbanyak"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Grafik 4: Rasio Gender -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3 border-0 rounded-4">
-                <h6 class="text-muted font-weight-bold mb-3">4. Rasio Gender Customer</h6>
-                <canvas id="chartGender" height="400"></canvas>
-            </div>
-        </div>
-
-        <!-- Grafik 5: Top 5 Kota -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3 border-0 rounded-4">
-                <h6 class="text-muted font-weight-bold mb-3">5. Top 5 Kota Asal Customer</h6>
-                <canvas id="chartKota" height="100"></canvas>
-            </div>
-        </div>
-
-        <!-- Grafik 6: Margin Laba Netto -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3 border-0 rounded-4">
-                <h6 class="text-muted font-weight-bold mb-3">6. Margin Laba Netto</h6>
-                <canvas id="chartMargin" height="100"></canvas>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <section id="section-tabel-customer">
         <div class="filter-bar">
@@ -858,99 +931,148 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx1 = document.getElementById('chartPendapatan');
-    if (ctx1) {
-        new Chart(ctx1.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-                datasets: [{
-                    label: 'Pendapatan (Rp)',
-                    data: [10000000, 15000000, 12000000, 25000000, 20000000, 34300000],
-                    borderColor: '#28a745',
-                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            }
-        });
-    }
+    const transactionLabels = @json($transactionChart['labels'] ?? []);
+    const customerSegments = @json(array_keys($customerChartStats['segments'] ?? []));
+    const customerSegmentCounts = @json(array_values($customerChartStats['segments'] ?? []));
+    const customerGenders = @json(array_keys($customerChartStats['genders'] ?? []));
+    const customerGenderCounts = @json(array_values($customerChartStats['genders'] ?? []));
+    const customerCities = @json(array_keys($customerChartStats['top_cities'] ?? []));
+    const customerCityCounts = @json(array_values($customerChartStats['top_cities'] ?? []));
+    const chartColors = ['#00AA13', '#F97316', '#0284C7', '#9333EA', '#E11D48', '#D97706'];
+    const currencyFormatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+    });
 
-    const ctx2 = document.getElementById('chartPengeluaran');
-    if (ctx2) {
-        new Chart(ctx2.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-                datasets: [{
-                    label: 'Pengeluaran (Rp)',
-                    data: [5000000, 4000000, 6000000, 3000000, 2000000, 20300000],
-                    backgroundColor: '#dc3545'
-                }]
-            }
-        });
-    }
-
-    const ctx3 = document.getElementById('chartSegmen');
-    if (ctx3) {
-        new Chart(ctx3.getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Retail', 'SME', 'Premium'],
-                datasets: [{
-                    data: [1500, 2000, 1501],
-                    backgroundColor: ['#ffc107', '#17a2b8', '#6f42c1']
-                }]
+    new Chart(document.getElementById('chartKeuangan'), {
+        type: 'bar',
+        data: {
+            labels: transactionLabels,
+            datasets: [
+                {
+                    label: 'Pendapatan',
+                    data: @json($transactionChart['income'] ?? []),
+                    backgroundColor: 'rgba(0, 170, 19, 0.78)',
+                    borderColor: '#00880D',
+                    borderWidth: 1,
+                    borderRadius: 6
+                },
+                {
+                    label: 'Pengeluaran',
+                    data: @json($transactionChart['expenses'] ?? []),
+                    backgroundColor: 'rgba(239, 68, 68, 0.78)',
+                    borderColor: '#DC2626',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: value => currencyFormatter.format(value) }
+                }
             },
-
-        });
-    }
-
-    const ctx4 = document.getElementById('chartGender');
-    if (ctx4) {
-        new Chart(ctx4.getContext('2d'), {
-            type: 'pie',
-            data: {
-                labels: ['Laki-laki', 'Perempuan'],
-                datasets: [{
-                    data: [3200, 1801],
-                    backgroundColor: ['#007bff', '#e83e8c']
-                }]
+            plugins: {
+                tooltip: {
+                    callbacks: { label: context => `${context.dataset.label}: ${currencyFormatter.format(context.raw)}` }
+                }
             }
+        }
+    });
 
-        });
-    }
-
-    const ctx5 = document.getElementById('chartKota');
-    if (ctx5) {
-        new Chart(ctx5.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Jakarta', 'Bogor', 'Bandung', 'Depok', 'Bekasi'],
-                datasets: [{
-                    label: 'Jumlah Customer',
-                    data: [1200, 950, 800, 600, 451],
-                    backgroundColor: '#20c997'
-                }]
+    new Chart(document.getElementById('chartMargin'), {
+        type: 'line',
+        data: {
+            labels: transactionLabels,
+            datasets: [{
+                label: 'Margin laba',
+                data: @json($transactionChart['margin'] ?? []),
+                borderColor: '#7C3AED',
+                backgroundColor: 'rgba(124, 58, 237, 0.12)',
+                pointBackgroundColor: '#7C3AED',
+                pointRadius: 4,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    ticks: { callback: value => `${value}%` }
+                }
             },
-            options: { indexAxis: 'y' }
-        });
-    }
-
-    const ctx6 = document.getElementById('chartMargin');
-    if (ctx6) {
-        new Chart(ctx6.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-                datasets: [{
-                    label: 'Margin (%)',
-                    data: [50, 65, 55, 80, 75, 96.2],
-                    borderColor: '#fd7e14',
-                    tension: 0.2
-                }]
+            plugins: {
+                tooltip: {
+                    callbacks: { label: context => `${context.dataset.label}: ${Number(context.raw).toFixed(1)}%` }
+                }
             }
-        });
-    }
+        }
+    });
+
+    new Chart(document.getElementById('chartSegmen'), {
+        type: 'doughnut',
+        data: {
+            labels: customerSegments,
+            datasets: [{
+                data: customerSegmentCounts,
+                backgroundColor: customerSegments.map((_, index) => chartColors[index % chartColors.length]),
+                borderWidth: 2,
+                borderColor: '#FFFFFF'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    new Chart(document.getElementById('chartGender'), {
+        type: 'doughnut',
+        data: {
+            labels: customerGenders,
+            datasets: [{
+                data: customerGenderCounts,
+                backgroundColor: customerGenders.map((_, index) => ['#0284C7', '#E11D48', '#94A3B8'][index % 3]),
+                borderWidth: 2,
+                borderColor: '#FFFFFF'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    new Chart(document.getElementById('chartKota'), {
+        type: 'bar',
+        data: {
+            labels: customerCities,
+            datasets: [{
+                label: 'Jumlah customer',
+                data: customerCityCounts,
+                backgroundColor: 'rgba(2, 132, 199, 0.78)',
+                borderColor: '#0369A1',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+            plugins: { legend: { display: false } }
+        }
+    });
 </script>
 @endpush

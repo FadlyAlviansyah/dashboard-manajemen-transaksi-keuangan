@@ -73,6 +73,7 @@ class CustomerCsvService
         $rawHeader = fgetcsv($handle);
         if (! $rawHeader) {
             fclose($handle);
+
             return [];
         }
 
@@ -164,6 +165,7 @@ class CustomerCsvService
         $rawHeader = fgetcsv($handle);
         if (! $rawHeader) {
             fclose($handle);
+
             return null;
         }
 
@@ -190,6 +192,7 @@ class CustomerCsvService
         }
 
         fclose($handle);
+
         return null;
     }
 
@@ -216,6 +219,7 @@ class CustomerCsvService
         }
 
         $nextNum = $maxNum + 1;
+
         return 'C'.str_pad((string) $nextNum, 5, '0', STR_PAD_LEFT);
     }
 
@@ -386,6 +390,7 @@ class CustomerCsvService
         }
 
         @unlink($tempPath);
+
         return false;
     }
 
@@ -418,6 +423,7 @@ class CustomerCsvService
             fclose($inHandle);
             fclose($outHandle);
             @unlink($tempPath);
+
             return false;
         }
 
@@ -430,6 +436,7 @@ class CustomerCsvService
         while (($row = fgetcsv($inHandle)) !== false) {
             if (count($row) < count($header)) {
                 fputcsv($outHandle, $row);
+
                 continue;
             }
 
@@ -496,6 +503,7 @@ class CustomerCsvService
         $totalCustomers = 0;
         $segments = [];
         $cities = [];
+        $genders = [];
         $totalIncome = 0.0;
 
         $handle = fopen($this->filePath, 'r');
@@ -517,8 +525,11 @@ class CustomerCsvService
 
                     $c = $row['city'] ?? '';
                     if ($c) {
-                        $cities[$c] = true;
+                        $cities[$c] = ($cities[$c] ?? 0) + 1;
                     }
+
+                    $gender = $row['gender'] ?? 'Other';
+                    $genders[$gender] = ($genders[$gender] ?? 0) + 1;
 
                     $inc = (float) ($row['annual_income'] ?? 0);
                     $totalIncome += $inc;
@@ -531,8 +542,21 @@ class CustomerCsvService
             'total_customers' => $totalCustomers,
             'total_cities' => count($cities),
             'segments' => $segments,
+            'genders' => $genders,
+            'top_cities' => $this->getTopCities($cities),
             'avg_income' => $totalCustomers > 0 ? $totalIncome / $totalCustomers : 0,
         ];
+    }
+
+    /**
+     * @param  array<string, int>  $cities
+     * @return array<string, int>
+     */
+    protected function getTopCities(array $cities): array
+    {
+        arsort($cities);
+
+        return array_slice($cities, 0, 5, true);
     }
 
     protected function formatDateForCsv(string $date): string

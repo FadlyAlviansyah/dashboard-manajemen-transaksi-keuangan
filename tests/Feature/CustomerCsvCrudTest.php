@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\CustomerCsvService;
+use App\Services\TransactionCsvService;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -22,9 +23,9 @@ class CustomerCsvCrudTest extends TestCase
         $response = $this->get('/dashboard-and-tabel');
 
         $response->assertStatus(200);
-        $response->assertSee('//dashboard (kosongkan)');
-        $response->assertSee('//tabel customer (disini akan ada tabel 10 baris dan ada paginasi per 10 data tabel)');
-        $response->assertSee('//tabeltransaction(kosongkan)');
+        $response->assertSee('1. Pendapatan & Pengeluaran', false);
+        $response->assertSee('2. Margin Laba');
+        $response->assertSee('3. Informasi Customer');
         $response->assertSee('Tabel Data Customer');
         $response->assertSee('10 Baris / Halaman');
     }
@@ -36,6 +37,26 @@ class CustomerCsvCrudTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Tambah Customer Baru');
         $response->assertSee('Simpan Customer ke CSV');
+    }
+
+    public function test_dashboard_charts_use_current_csv_data(): void
+    {
+        $transactions = app(TransactionCsvService::class)->getAll();
+        $transactionLabels = json_encode(array_column($transactions, 'bulan'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        $response = $this->get('/dashboard-and-tabel');
+
+        $response->assertOk();
+        $response->assertSee('id="chartKeuangan"', false);
+        $response->assertSee('id="chartMargin"', false);
+        $response->assertSee('id="chartSegmen"', false);
+        $response->assertSee('id="chartGender"', false);
+        $response->assertSee('id="chartKota"', false);
+        $response->assertSee("const transactionLabels = {$transactionLabels};", false);
+        $response->assertSee("label: 'Pendapatan'", false);
+        $response->assertSee("label: 'Pengeluaran'", false);
+        $response->assertSee("label: 'Margin laba'", false);
+        $response->assertDontSee('data: [10000000, 15000000, 12000000, 25000000, 20000000, 34300000]', false);
     }
 
     public function test_create_update_and_delete_customer_flow_directly_on_csv(): void

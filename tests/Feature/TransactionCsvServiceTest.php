@@ -35,8 +35,25 @@ class TransactionCsvServiceTest extends TestCase
 
     public function test_it_creates_reads_updates_and_deletes_transactions(): void
     {
+        $syncCall = 0;
         $query = \Mockery::mock(Builder::class);
-        $query->shouldReceive('updateOrInsert')->twice()->andReturnTrue();
+        $query->shouldReceive('updateOrInsert')
+            ->twice()
+            ->withArgs(function (array $keys, array $values) use (&$syncCall): bool {
+                $syncCall++;
+                $this->assertArrayHasKey('updated_at', $values);
+                $this->assertInstanceOf(\DateTimeInterface::class, $values['updated_at']);
+
+                if ($syncCall === 1) {
+                    $this->assertArrayHasKey('created_at', $values);
+                    $this->assertInstanceOf(\DateTimeInterface::class, $values['created_at']);
+                } else {
+                    $this->assertArrayNotHasKey('created_at', $values);
+                }
+
+                return true;
+            })
+            ->andReturnTrue();
         $query->shouldReceive('where')->once()->with('id', 1)->andReturnSelf();
         $query->shouldReceive('delete')->once()->andReturn(1);
         DB::shouldReceive('table')->with('transactions')->times(3)->andReturn($query);

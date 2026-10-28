@@ -137,7 +137,7 @@ class TransactionCsvService
         flock($handle, LOCK_UN);
         fclose($handle);
 
-        $this->syncToDatabase($row);
+        $this->syncToDatabase($row, true);
 
         return $row;
     }
@@ -287,27 +287,34 @@ class TransactionCsvService
      *
      * @param  array<string, mixed>|null  $transaction
      */
-    protected function syncToDatabase(?array $transaction): void
+    protected function syncToDatabase(?array $transaction, bool $isNew = false): void
     {
         if ($transaction === null || ! ctype_digit((string) $transaction['id'])) {
             throw new \RuntimeException('ID transaksi CSV tidak valid untuk disimpan ke database.');
         }
 
+        $attributes = [
+            'bulan' => $transaction['bulan'],
+            'pendapatan' => $transaction['pendapatan'],
+            'pengeluaran' => $transaction['pengeluaran'],
+            'm1_pen' => $transaction['minggu_1_pendapatan'],
+            'm1_peng' => $transaction['minggu_1_pengeluaran'],
+            'm2_pen' => $transaction['minggu_2_pendapatan'],
+            'm2_peng' => $transaction['minggu_2_pengeluaran'],
+            'm3_pen' => $transaction['minggu_3_pendapatan'],
+            'm3_peng' => $transaction['minggu_3_pengeluaran'],
+            'm4_pen' => $transaction['minggu_4_pendapatan'],
+            'm4_peng' => $transaction['minggu_4_pengeluaran'],
+            'updated_at' => now(),
+        ];
+
+        if ($isNew) {
+            $attributes['created_at'] = now();
+        }
+
         DB::table('transactions')->updateOrInsert(
             ['id' => (int) $transaction['id']],
-            [
-                'bulan' => $transaction['bulan'],
-                'pendapatan' => $transaction['pendapatan'],
-                'pengeluaran' => $transaction['pengeluaran'],
-                'm1_pen' => $transaction['minggu_1_pendapatan'],
-                'm1_peng' => $transaction['minggu_1_pengeluaran'],
-                'm2_pen' => $transaction['minggu_2_pendapatan'],
-                'm2_peng' => $transaction['minggu_2_pengeluaran'],
-                'm3_pen' => $transaction['minggu_3_pendapatan'],
-                'm3_peng' => $transaction['minggu_3_pengeluaran'],
-                'm4_pen' => $transaction['minggu_4_pendapatan'],
-                'm4_peng' => $transaction['minggu_4_pengeluaran'],
-            ]
+            $attributes
         );
     }
 

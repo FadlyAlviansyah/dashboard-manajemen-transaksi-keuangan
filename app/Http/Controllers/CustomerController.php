@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\CustomerCsvService;
+use App\Services\TransactionCsvService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -11,8 +12,10 @@ class CustomerController extends Controller
 {
     protected CustomerCsvService $csvService;
 
-    public function __construct(CustomerCsvService $csvService)
-    {
+    public function __construct(
+        CustomerCsvService $csvService,
+        protected TransactionCsvService $transactionCsvService
+    ) {
         $this->csvService = $csvService;
     }
 
@@ -28,11 +31,13 @@ class CustomerController extends Controller
         $stats = $this->csvService->getSummaryStats();
         $nextId = $this->csvService->generateNextId();
 
-        $transactionController = app(TransactionController::class);
-        $transactionResponse = $transactionController->index();
-        $transactionData = method_exists($transactionResponse, 'getData')
-            ? $transactionResponse->getData(true)
-            : [];
+        $transactions = collect($this->transactionCsvService->getAll());
+        $transactionStats = $this->transactionCsvService->getSummaryStats();
+        $customerChartStats = [
+            'segments' => $stats['segments'],
+            'genders' => $stats['genders'],
+            'top_cities' => $stats['top_cities'],
+        ];
 
         return view('dashboard-and-tabel', array_merge([
             'customers' => $customers,
@@ -41,7 +46,17 @@ class CustomerController extends Controller
             'search' => $search,
             'segment' => $segment,
             'gender' => $gender,
-        ], $transactionData));
+            'transactions' => $transactions,
+            'customerChartStats' => $customerChartStats,
+            'transactionChart' => [
+                'labels' => $transactions->pluck('bulan')->all(),
+                'income' => $transactions->pluck('pendapatan')->all(),
+                'expenses' => $transactions->pluck('pengeluaran')->all(),
+                'margin' => $transactions->map(fn (array $transaction): float => $transaction['pendapatan'] > 0
+                    ? (($transaction['pendapatan'] - $transaction['pengeluaran']) / $transaction['pendapatan']) * 100
+                    : 0)->all(),
+            ],
+        ], $transactionStats));
     }
 
     public function create(): View
