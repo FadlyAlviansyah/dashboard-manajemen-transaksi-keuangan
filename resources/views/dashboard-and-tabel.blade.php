@@ -4,7 +4,6 @@
 
 @push('styles')
 <style>
-    /* Hero Banner Gojek x Duolingo */
     .hero-banner {
         background: linear-gradient(135deg, #00AA13 0%, #00880D 50%, #02660A 100%);
         border-radius: var(--radius-lg);
@@ -491,7 +490,6 @@
         </div>
     </div>
 
-
     <div class="row mb-5">
         <div class="col-12 mb-3">
             <h4 class="font-weight-bold text-dark">📊 Grafik Analitik Keuangan & Customer</h4>
@@ -545,32 +543,8 @@
             </div>
         </div>
     </div>
-    {{-- <div class="placeholder-module" id="section-dashboard">
-        <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 44px; height: 44px; border-radius: 12px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                📊
-            </div>
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span class="placeholder-badge">//dashboard (kosongkan)</span>
-                    <strong style="color: #475569; font-size: 0.95rem;">Modul Dashboard Analitik</strong>
-                </div>
-                <div style="font-size: 0.82rem; color: #64748B; margin-top: 3px;">
-                    Area ini sengaja dikosongkan (reserved) untuk pengerjaan anggota tim modul Dashboard Transaksi.
-                </div>
-            </div>
-        </div>
-        <div style="font-size: 0.78rem; font-weight: 700; color: #94A3B8; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid #CBD5E1;">
-            Status: Kosongkan
-        </div>
-    </div> --}}
 
-
-    {{-- ========================================================================= --}}
-    <!-- //tabel customer (disini akan ada tabel 10 baris dan ada paginasi per 10 data tabel) -->
-    {{-- ========================================================================= --}}
     <section id="section-tabel-customer">
-        <!-- Table Filter & Search Card -->
         <div class="filter-bar">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                 <div>
@@ -589,7 +563,6 @@
                 </a>
             </div>
 
-            <!-- Form Pencarian & Filter -->
             <form action="{{ route('dashboard.table') }}" method="GET" class="filter-inputs">
                 <div class="search-group">
                     <i data-lucide="search" class="search-icon-inside" style="width: 18px; height: 18px;"></i>
@@ -772,8 +745,7 @@
                         @endif
                         <a href="{{ $customers->appends(request()->query())->url($last) }}" class="page-btn">{{ $last }}</a>
                     @endif
-
-                    <!-- Tombol Berikutnya -->
+                    
                     @if($customers->hasMorePages())
                         <a href="{{ $customers->appends(request()->query())->nextPageUrl() }}" class="page-btn">
                             <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
@@ -784,7 +756,6 @@
                         </span>
                     @endif
 
-                    <!-- Tombol Halaman Terakhir -->
                     @if($customers->currentPage() < $customers->lastPage())
                         <a href="{{ $customers->appends(request()->query())->url($customers->lastPage()) }}" class="page-btn" title="Halaman Terakhir">
                             &raquo;
@@ -794,30 +765,22 @@
                     @endif
                 </div>
 
-                <!-- Form Lompat Halaman -->
                 <form action="{{ route('dashboard.table') }}" method="GET" class="jump-form">
                     @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
                     @if(request('segment')) <input type="hidden" name="segment" value="{{ request('segment') }}"> @endif
                     @if(request('gender')) <input type="hidden" name="gender" value="{{ request('gender') }}"> @endif
                     <span>Lompat ke:</span>
-                    <input type="number" 
-                           name="page" 
-                           min="1" 
-                           max="{{ $customers->lastPage() }}" 
-                           placeholder="{{ $customers->currentPage() }}" 
-                           class="jump-input">
+                    <input type="number" name="page" min="1" max="{{ $customers->lastPage() }}" placeholder="{{ $customers->currentPage() }}" class="jump-input">
                     <button type="submit" class="btn-3d btn-secondary btn-sm" style="padding: 4px 10px;">Go</button>
                 </form>
             </div>
         </div>
     </section>
 
-    <!-- Modul Tabel Transaksi -->
     <section id="section-tabel-transaksi">
         @include('transaction.index')
     </section>
 
-    <!-- Modal Konfirmasi Hapus Custom (Tepat di Tengah Layar) -->
     <div id="custom-delete-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
         <div style="background: white; border: 2.5px solid #E2E8F0; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.2); width: 100%; max-width: 420px; padding: 28px; text-align: center; animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
             
@@ -856,7 +819,6 @@
 
 @push('scripts')
 <script>
-    // Modal Hapus Customer
     function openDeleteModal(id, name) {
         let modal = document.getElementById('custom-delete-modal');
         let form = document.getElementById('custom-delete-form');
@@ -870,7 +832,6 @@
         modal.style.display = 'flex';
     }
 
-    // Modal Hapus Transaksi
     function openDeleteTransaksiModal(id, bulan) {
         let modal = document.getElementById('custom-delete-modal');
         let form = document.getElementById('custom-delete-form');
@@ -884,17 +845,112 @@
         modal.style.display = 'flex';
     }
 
-    // Tutup Modal
     function closeDeleteModal() {
         document.getElementById('custom-delete-modal').style.display = 'none';
     }
 
-    // Tutup modal jika user klik area luar kotak
     window.onclick = function(event) {
         let modal = document.getElementById('custom-delete-modal');
         if (event.target == modal) {
             closeDeleteModal();
         }
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx1 = document.getElementById('chartPendapatan');
+    if (ctx1) {
+        new Chart(ctx1.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: [10000000, 15000000, 12000000, 25000000, 20000000, 34300000],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            }
+        });
+    }
+
+    const ctx2 = document.getElementById('chartPengeluaran');
+    if (ctx2) {
+        new Chart(ctx2.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Pengeluaran (Rp)',
+                    data: [5000000, 4000000, 6000000, 3000000, 2000000, 20300000],
+                    backgroundColor: '#dc3545'
+                }]
+            }
+        });
+    }
+
+    const ctx3 = document.getElementById('chartSegmen');
+    if (ctx3) {
+        new Chart(ctx3.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Retail', 'SME', 'Premium'],
+                datasets: [{
+                    data: [1500, 2000, 1501],
+                    backgroundColor: ['#ffc107', '#17a2b8', '#6f42c1']
+                }]
+            },
+
+        });
+    }
+
+    const ctx4 = document.getElementById('chartGender');
+    if (ctx4) {
+        new Chart(ctx4.getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: ['Laki-laki', 'Perempuan'],
+                datasets: [{
+                    data: [3200, 1801],
+                    backgroundColor: ['#007bff', '#e83e8c']
+                }]
+            }
+
+        });
+    }
+
+    const ctx5 = document.getElementById('chartKota');
+    if (ctx5) {
+        new Chart(ctx5.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Jakarta', 'Bogor', 'Bandung', 'Depok', 'Bekasi'],
+                datasets: [{
+                    label: 'Jumlah Customer',
+                    data: [1200, 950, 800, 600, 451],
+                    backgroundColor: '#20c997'
+                }]
+            },
+            options: { indexAxis: 'y' }
+        });
+    }
+
+    const ctx6 = document.getElementById('chartMargin');
+    if (ctx6) {
+        new Chart(ctx6.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Margin (%)',
+                    data: [50, 65, 55, 80, 75, 96.2],
+                    borderColor: '#fd7e14',
+                    tension: 0.2
+                }]
+            }
+        });
     }
 </script>
 @endpush
